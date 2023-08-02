@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Define the source directory containing Git repositories
+source_dir="/opt"
+
+# Define the destination log directory
+log_dir="/var/log/omnisint"
+
+# Ensure the log directory exists
+mkdir -p "$log_dir"
+
+# Loop through each directory in the source directory
+for repo_dir in "$source_dir"/*; do
+  if [ -d "$repo_dir" ]; then
+    # Get the base name of the repository (without the path)
+    repo_name=$(basename "$repo_dir")
+
+    # Check if it's a Git repository
+    if [ -d "$repo_dir/.git" ]; then
+      echo "Processing Git repository: $repo_name"
+
+      # Create a log file in the log directory with the same name as the repository
+      log_file="$log_dir/$repo_name.log"
+
+      # Run git commands and log the output to the log file
+      echo "Git commit history for $repo_name:" >> "$log_file"
+      git --git-dir="$repo_dir/.git" --work-tree="$repo_dir" log >> "$log_file"
+
+      # You can add more git commands here to log other repository information
+      # For example:
+      # echo "Git status for $repo_name:" >> "$log_file"
+      # git --git-dir="$repo_dir/.git" --work-tree="$repo_dir" status >> "$log_file"
+
+      echo "Finished processing $repo_name"
+    else
+      echo "Skipping non-Git directory: $repo_name"
+    fi
+  fi
+done
+
+echo "Script completed successfully!"
